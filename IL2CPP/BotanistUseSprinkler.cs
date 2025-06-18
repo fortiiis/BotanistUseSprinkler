@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.1", "Fortis")]
+[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.2", "Fortis")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace BotanistUseSprinkler;
@@ -55,6 +55,8 @@ public class BotanistUseSprinklerMod : MelonMod
     [HarmonyPatch(typeof(PotActionBehaviour), "ActiveMinPass")]
     public static class PotActionBehaviourActiveMinPassPatch
     {
+        public static List<Pot> ActiveHandWateredPots = new List<Pot>();
+
         [HarmonyPostfix]
         private static void Postfix(PotActionBehaviour __instance)
         {
@@ -69,9 +71,21 @@ public class BotanistUseSprinklerMod : MelonMod
             if (!IsAtPot(__instance))
                 return;
 
+            Log($"(PotActionBehaviourActiveMinPassPatch/Postfix) ActiveHandWateredPots Count: {ActiveHandWateredPots.Count}", LogLevel.Debug);
+            if (ActiveHandWateredPots.FirstOrDefault(x => x.OriginCoordinate == __instance.AssignedPot.OriginCoordinate) is not null)
+            {
+                Coordinate assignedPotCoords = new Coordinate(__instance.AssignedPot.OriginCoordinate);
+                Log($"(PotActionBehaviourActiveMinPassPatch/Postfix) Pot at x: {assignedPotCoords.x}, y: {assignedPotCoords.y} is currently being hand watered, skipping", LogLevel.Debug);
+                return;
+            }
+
             List<Sprinkler> sprinklers = GetPotSprinklers(__instance.AssignedPot);
             if (sprinklers.Count <= 0)
+            {
+                Log($"(PotActionBehaviourActiveMinPassPatch/Postfix) Pot has no sprinklers, adding to active hand watered pots", LogLevel.Debug);
+                ActiveHandWateredPots.Add(__instance.AssignedPot);
                 return;
+            }
 
             foreach (Sprinkler sprinkler in sprinklers)
             {
@@ -226,6 +240,28 @@ public class BotanistUseSprinklerMod : MelonMod
             }
 
             return false;
+        }
+    }
+
+    // Pots with no sprinklers on them cause the mod to check for sprinklers every second until Botanist finishes hand watering
+    // This is hopefully a temporary fix to this, this method is only called once so its not expensive
+    [HarmonyPatch(typeof(PotActionBehaviour), nameof(PotActionBehaviour.CompleteAction))]
+    public static class PotActionBehaviourCompleteActionPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(PotActionBehaviour __instance)
+        {
+            if (__instance.CurrentActionType is not PotActionBehaviour.EActionType.Water)
+                return;
+
+            if (__instance.AssignedPot is not null)
+            {
+                if (PotActionBehaviourActiveMinPassPatch.ActiveHandWateredPots.FirstOrDefault(x => x.OriginCoordinate == __instance.AssignedPot.OriginCoordinate) is not null)
+                {
+                    Log($"(PotActionBehaviourCompleteActionPatch/Postfix) Pot finished watering, removing pot from active hand watered", LogLevel.Debug);
+                    PotActionBehaviourActiveMinPassPatch.ActiveHandWateredPots.Remove(__instance.AssignedPot);
+                }
+            }
         }
     }
 

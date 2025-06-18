@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.1", "Fortis")]
+[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.2", "Fortis")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace BotanistUseSprinkler;
