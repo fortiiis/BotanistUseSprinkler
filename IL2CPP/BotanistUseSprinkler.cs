@@ -79,23 +79,18 @@ public class BotanistUseSprinklerMod : MelonMod
                 return;
             }
 
-            List<Sprinkler> sprinklers = GetPotSprinklers(__instance.AssignedPot);
-            if (sprinklers.Count <= 0)
+            Sprinkler? sprinkler = GetPotSprinkler(__instance.AssignedPot);
+            if (sprinkler is null)
             {
                 Log($"(PotActionBehaviourActiveMinPassPatch/Postfix) Pot has no sprinklers, adding to active hand watered pots", LogLevel.Debug);
                 ActiveHandWateredPots.Add(__instance.AssignedPot);
                 return;
             }
 
-            foreach (Sprinkler sprinkler in sprinklers)
-            {
-                Coordinate sprinklerCoords = new Coordinate(sprinkler.OriginCoordinate);
-                Log($"(PotActionBehaviourActiveMinPassPatch/Postfix) Sprinkler at x: {sprinklerCoords.x}, y: {sprinklerCoords.y} with IsSprinkling: {sprinkler.IsSprinkling}", LogLevel.Debug);
-                if (sprinkler.IsSprinkling)
-                    continue;
-
+            Coordinate sprinklerCoords = new Coordinate(sprinkler.OriginCoordinate);
+            Log($"(PotActionBehaviourActiveMinPassPatch/Postfix) Sprinkler at x: {sprinklerCoords.x}, y: {sprinklerCoords.y} with IsSprinkling: {sprinkler.IsSprinkling}", LogLevel.Debug);
+            if (!sprinkler.IsSprinkling)
                 sprinkler.Interacted();
-            }
 
             __instance.StopPerformAction();
             __instance.CompleteAction();
@@ -120,7 +115,7 @@ public class BotanistUseSprinklerMod : MelonMod
             return false;
         }
 
-        private static List<Sprinkler> GetPotSprinklers(Pot pot)
+        private static Sprinkler? GetPotSprinkler(Pot pot)
         {
             Coordinate assignedPotCoords = new Coordinate(pot.OriginCoordinate);
             Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Assigned Pot Coords x: {assignedPotCoords.x}, y: {assignedPotCoords.y}", LogLevel.Debug);
@@ -164,62 +159,41 @@ public class BotanistUseSprinklerMod : MelonMod
                 }
             }
 
-            List<Sprinkler> potSprinklers = new List<Sprinkler>();
+            Sprinkler? potSprinkler = null;
             if (sprinklersAroundPot.Count <= 0)
-                return potSprinklers;
+                return potSprinkler;
 
             Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) sprinklersAroundPot Count: {sprinklersAroundPot.Count}", LogLevel.Debug);
 
             for (int i = 0; i < sprinklersAroundPot.Count; i++)
             {
                 Coordinate sprinklerCoords = new Coordinate(sprinklersAroundPot[i].OriginCoordinate);
-                Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Checking if sprinkler at x: {sprinklerCoords.x}, y: {sprinklerCoords.y} pot is assigned pot", LogLevel.Debug);
-                Coordinate coord1 = new Coordinate(sprinklersAroundPot[i].OriginCoordinate) + Coordinate.RotateCoordinates(new Coordinate(0, 1), sprinklersAroundPot[i].Rotation);
-                Coordinate coord2 = new Coordinate(sprinklersAroundPot[i].OriginCoordinate) + Coordinate.RotateCoordinates(new Coordinate(1, 1), sprinklersAroundPot[i].Rotation);
-                Tile tile = sprinklersAroundPot[i].OwnerGrid.GetTile(coord1);
-                Tile tile2 = sprinklersAroundPot[i].OwnerGrid.GetTile(coord2);
-
-                List<Pot> pots = new List<Pot>();
-                if (tile != null && tile2 != null)
-                {
-                    Pot tilePot = null;
-                    foreach (GridItem item in tile.BuildableOccupants)
-                    {
-                        if (item is Pot)
-                        {
-                            tilePot = item as Pot;
-                            break;
-                        }
-                    }
-
-                    if (tilePot != null && tile2.BuildableOccupants.Contains(tilePot))
-                    {
-                        pots.Add(tilePot);
-                    }
-                }
-
+                var pots = sprinklersAroundPot[i].GetPots();
                 if (pots.Count <= 0)
                 {
-                    Log("(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Tile pots count is 0 or less", LogLevel.Debug);
-                    return potSprinklers;
+                    Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Sprinkler at x: {sprinklerCoords.x}, y: {sprinklerCoords.y} contains no pots", LogLevel.Debug);
+                    break;
                 }
 
-                Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Sprinkler pots count: {pots.Count}", LogLevel.Debug);
-
-                for (int p = 0; p < pots.Count; p++)
+                foreach (var sprinklerPot in pots)
                 {
-                    Coordinate tilePotCoords = new Coordinate(pots[p].OriginCoordinate);
-                    Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Checking sprinkler pot at x: {tilePotCoords.x}, y: {tilePotCoords.y} matches assigned pot at x: {assignedPotCoords.x}, y {assignedPotCoords.y}", LogLevel.Debug);
-                    if (tilePotCoords.x == assignedPotCoords.x && tilePotCoords.y == assignedPotCoords.y)
+                    if (sprinklerPot is null)
                     {
-                        Log("(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Adding Sprinkler", LogLevel.Debug);
-                        potSprinklers.Add(sprinklersAroundPot[i]);
+                        Log("(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Sprinkler Pot is null", LogLevel.Debug);
+                        continue;
+                    }
+
+                    Coordinate potCoords = new Coordinate(sprinklerPot.OriginCoordinate);
+                    Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Checking if pot matches assigned pot", LogLevel.Debug);
+                    if (potCoords.x == assignedPotCoords.x && potCoords.y == assignedPotCoords.y)
+                    {
+                        Log("(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Pot matched, returning sprinkler", LogLevel.Debug);
+                        potSprinkler = sprinklersAroundPot[i];
                     }
                 }
             }
 
-            Log($"(PotActionBehaviourActiveMinPassPatch/GetPotSprinklers) Sprinklers to be activated: {potSprinklers.Count}", LogLevel.Debug);
-            return potSprinklers;
+            return potSprinkler;
         }
 
         private static bool TryGetSprinkler(Tile tile, out Sprinkler? sprinkler)
