@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.2", "Fortis")]
+[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.4", "Fortis")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace BotanistUseSprinkler;
@@ -94,7 +94,7 @@ public class BotanistUseSprinklerMod : MelonMod
             StopPerformAction.Invoke(__instance, null);
             CompleteAction.Invoke(__instance, null);
 
-            __instance.SendEnd();
+            __instance.End_Server();
             Botanist botanist = __instance.Npc as Botanist;
             if (botanist is not null)
                 botanist.SetIdle(true);

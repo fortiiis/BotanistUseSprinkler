@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.2", "Fortis")]
+[assembly: MelonInfo(typeof(BotanistUseSprinklerMod), "Botanist Use Sprinkler", "1.0.4", "Fortis")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace BotanistUseSprinkler;
@@ -94,7 +94,7 @@ public class BotanistUseSprinklerMod : MelonMod
 
             __instance.StopPerformAction();
             __instance.CompleteAction();
-            __instance.SendEnd();
+            __instance.End_Server();
             __instance.botanist.SetIdle(true);
         }
 
