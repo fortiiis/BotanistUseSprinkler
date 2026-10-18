@@ -1,34 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>BotanistUseSprinkler</AssemblyName>
+    <Version>1.1.0</Version>
+    <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
-	<LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DefineConstants>TRACE;IL2CPP;FEATURE_SPRINKLER</DefineConstants>
+    <Deterministic>true</Deterministic>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>E:\Schedule I Mod Resources\Shared\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>E:\Schedule I Mod Resources\Il2CPP\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2CppFishNet.Runtime">
-      <HintPath>E:\Schedule I Mod Resources\Il2CPP\Il2CppFishNet.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>E:\Schedule I Mod Resources\Il2CPP\Il2CppInterop.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2Cppmscorlib">
-      <HintPath>E:\Schedule I Mod Resources\Il2CPP\Il2Cppmscorlib.dll</HintPath>
-    </Reference>
-    <Reference Include="MelonLoader">
-      <HintPath>E:\Schedule I Mod Resources\Shared\MelonLoader.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>E:\Schedule I Mod Resources\Il2CPP\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
+    <Reference Include="MelonLoader" HintPath="$(MelonLoaderRoot)\net6\MelonLoader.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(MelonLoaderRoot)\net6\0Harmony.dll" Private="false" />
+    <Reference Include="Il2CppInterop.Runtime" HintPath="$(MelonLoaderRoot)\net6\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="Il2CppInterop.Common" HintPath="$(MelonLoaderRoot)\net6\Il2CppInterop.Common.dll" Private="false" />
+    <Reference Include="Il2CppInterop.HarmonySupport" HintPath="$(MelonLoaderRoot)\net6\Il2CppInterop.HarmonySupport.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="Il2CppScheduleOne.Core" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\Il2CppScheduleOne.Core.dll" Private="false" />
+    <Reference Include="Il2Cppmscorlib" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\Il2Cppmscorlib.dll" Private="false" />
+    <Reference Include="Il2CppFishNet.Runtime" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\Il2CppFishNet.Runtime.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.AnimationModule" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\UnityEngine.AnimationModule.dll" Private="false" />
+    <Reference Include="UnityEngine.ParticleSystemModule" HintPath="$(MelonLoaderRoot)\Il2CppAssemblies\UnityEngine.ParticleSystemModule.dll" Private="false" />
   </ItemGroup>
 
+  <Target Name="ValidateMelonLoaderRoot" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(MelonLoaderRoot)' == ''" Text="Set MelonLoaderRoot to the matching game's MelonLoader directory." />
+    <Error Condition="!Exists('$(MelonLoaderRoot)\net6\MelonLoader.dll')" Text="MelonLoaderRoot does not contain net6\MelonLoader.dll." />
+    <Error Condition="!Exists('$(MelonLoaderRoot)\Il2CppAssemblies\Assembly-CSharp.dll')" Text="MelonLoaderRoot does not contain Il2CppAssemblies\Assembly-CSharp.dll." />
+  </Target>
 </Project>
