@@ -1,38 +1,56 @@
 # BotanistUseSprinkler
-A Schedule I quality of life mod. This mod makes Botanist use a sprinkler if it exists, this improves the time it takes for them to water.
 
-Works with multiplayer, per testing only the host needs the mod.
+Botanists can use linked sprinklers while watering pots. This repository was created by Fortis.
 
-# Installation
-- Install [MelonLoader](https://melonwiki.xyz/#/?id=requirements)
+Version 1.1.0 updates the IL2CPP build for Schedule I 0.4.7f12.
 
-## If Base Game (IL2CPP) Version
-- Drag `BotanistUseSprinkler.dll` into the `Mods` folder
+## What changed
 
-## If Alternate Game (Mono) Version
-- Drag `BotanistUseSprinkler_Mono.dll` into the `Mods` folder
+- Uses the current `WaterPotBehaviour` task instead of the removed `PotActionBehaviour` type.
+- Detects linked small and large sprinklers.
+- Activates a suitable sprinkler when a botanist starts a watering task.
+- Releases the botanist immediately after activation so the sprinkler handles the watering.
+- Suppresses the normal watering action only when the sprinkler path succeeds.
+- Falls back to the normal watering-can workflow when a sprinkler cannot be used.
+- Caches device lookups for 10 seconds to reduce repeated scene scans.
 
-# Changelog
+## Configuration
 
-## v1.0.3
-- Tweaked how mod gets sprinklers to hopefully fix cases where certain sprinkler placements may not be triggered by Botanist
+The configuration file is created at:
 
-## v1.0.2
-IL2CPP Only
+`UserData/BotanistUseSprinkler/configuration.json`
 
-- Fixed issue where if a pot has no sprinkler, mod would try to get pot sprinklers every second while botanist hand watered
-Mono
+Default configuration:
 
-- Optional update, only fixed version shown in console when loading and matched IL2CPP version (1.0.2)
+```json
+{
+  "enabled": true,
+  "debug": false
+}
+```
 
-## v1.0.1
-- Fixed animation bug which also improves speed
-- Slightly tweaked how it gets sprinklers
+- `enabled` turns the mod on or off.
+- `debug` enables extra diagnostic logging.
 
+## Installation
 
-Mono Only
+1. Install MelonLoader for the IL2CPP version of Schedule I.
+2. Put `BotanistUseSprinkler.dll` in the game's `Mods` folder.
+3. In multiplayer, every participant should use the same DLL and configuration.
 
-- Changed check from ActiveMinPass to PerformAction (ActiveMinPass is called per game tick, whereas PerformAction is only called once)
+The Mono project is retained for reference. It is not part of this compatibility update.
 
-## v1.0.0
-- Initial release
+## Building
+
+Build with .NET 6 and point `MelonLoaderRoot` at the game's MelonLoader directory:
+
+```powershell
+dotnet build IL2CPP/BotanistUseSprinkler.csproj --configuration Release --property:MelonLoaderRoot="C:\Program Files (x86)\Steam\steamapps\common\Schedule I\MelonLoader"
+```
+
+Game and MelonLoader assemblies are referenced from the local installation. They are not committed to this repository.
+
+## Credits
+
+- Original mod by Fortis.
+- Schedule I 0.4.7f12 compatibility update contributed by GSVS UK ACM / xboxnuker-rgb.
